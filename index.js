@@ -16,6 +16,12 @@ var gates = {
     // apply X-gate to qubit-index
     this.qubit = qubit_index;
     this.code = 'X ' + qubit_index;
+  },
+  
+  H: function(qubit_index) {
+    // apply H-gate to qubit-index
+    this.qubit = qubit_index;
+    this.code = 'H ' + qubit_index;
   }
 };
 
@@ -48,7 +54,11 @@ Program.prototype = {
     for (var a = 0; a < this.src.length; a++) {
       var instruction = this.src[a];
       if (typeof instruction === 'object') {
-        qubits[instruction.qubit] = 1;
+        if (instruction.code[0] === 'X') {
+          qubits[instruction.qubit] = 1;
+        } else if (instruction.code[0] === 'H') {
+          qubits[instruction.qubit] = ((Math.random() > 0.5) ? 1 : 0);
+        }
       } else {
         classical_bits[0] = qubits[0];
       }
@@ -59,22 +69,48 @@ Program.prototype = {
 
 var QVM = function() { };
 QVM.prototype = {
-  run: function(program, classical_indexes, callback) {
-    program.run(function(err) {
+  runOnce: function(callback) {
+    let cix = this.classical_indexes;
+    this.program.run(function(err) {
       if (err) {
         return callback(err);
       }
       
       var returns = [];
       function readIndex(i) {
-        if (i >= classical_indexes.length) {
+        if (i >= cix.length) {
           return callback(null, returns);
         }
-        returns.push(valueOfClassical(classical_indexes[i]));
+        returns.push(valueOfClassical(cix[i]));
         readIndex(i + 1);
       }
       readIndex(0);
     });
+  },
+  
+  run: function(program, classical_indexes, iterations, callback) {
+    this.program = program;
+    this.classical_indexes = classical_indexes;
+
+    let responses = [];
+    if (!iterations || isNaN(iterations * 1)) {
+      iterations = 1;
+    }
+    
+    var runMe = (function(i) {
+      if (i >= iterations) {
+        console.log('too big');
+        return callback(null, responses);
+      }
+      this.runOnce((function(err, response) {
+        if (err) {
+          return callback(err, []);
+        }
+        responses.push(response);
+        runMe(i + 1);
+      }).bind(this));
+    }).bind(this);
+    runMe(0);
   }
 };
 

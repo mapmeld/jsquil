@@ -18,21 +18,45 @@ describe('initial tests', function() {
   
   it('tells the QVM to run a program with one return value', function(done) {
     // return the zeroth classical register
-    q.run(p, [0], function(err, returns) {
+    q.run(p, [0], 1, function(err, returns) {
       assert.equal(err, null);
       assert.equal(returns.length, 1);
-      assert.equal(returns[0], 1);
+      assert.equal(returns[0].length, 1);
+      assert.equal(returns[0][0], 1);
       done();
     });
   });
   
   it('tells the QVM to run a program with three return values', function(done) {
-    q.run(p, [0, 1, 2], function(err, returns) {
+    q.run(p, [0, 1, 2], 1, function(err, returns) {
       assert.equal(err, null);
-      assert.equal(returns.length, 3);
-      assert.equal(returns[0], 1);
-      assert.equal(returns[1], 0);
-      assert.equal(returns[2], 0);
+      assert.equal(returns.length, 1);
+      assert.equal(returns[0].length, 3);
+      assert.equal(returns[0][0], 1);
+      assert.equal(returns[0][1], 0);
+      assert.equal(returns[0][2], 0);
+      done();
+    });
+  });
+});
+
+describe('H gate', function() {
+  before(function() {
+    p = new Program();
+    p.inst(new gates.H(0));
+    p.measure(0, 0);
+  });
+
+  it('tells the QVM to run a program three times', function(done) {
+    q.run(p, [0], 10, function(err, returns) {
+      assert.equal(err, null);
+      assert.equal(returns.length, 10);
+      returns = returns.map(function(response) {
+        assert.equal(response.length, 1);
+        return response[0];
+      });
+      assert.isAtLeast(returns.indexOf(0), 0);
+      assert.isAtLeast(returns.indexOf(1), 0);
       done();
     });
   });
