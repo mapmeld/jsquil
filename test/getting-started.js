@@ -40,6 +40,22 @@ describe('initial tests', function() {
   });
 });
 
+describe('series of gates', function() {
+  before(function() {
+    p = new Program();
+    p.inst(new gates.X(0), new gates.Y(1), new gates.Z(0));
+    p.measure(0, 1);
+  });
+  
+  it('remembers all instructions', function(done) {
+    assert.equal(p.code(), 'X 0\nY 1\nZ 0\nMEASURE 0 [1]\n');
+    q.run(p, [0], 1, function(err, returns) {
+      assert.equal(err, null);
+      done();
+    });
+  });
+});
+
 describe('H gate', function() {
   before(function() {
     p = new Program();
@@ -47,7 +63,7 @@ describe('H gate', function() {
     p.measure(0, 0);
   });
 
-  it('tells the QVM to run a program three times', function(done) {
+  it('tells the QVM to run a program ten times', function(done) {
     q.run(p, [0], 10, function(err, returns) {
       assert.equal(err, null);
       assert.equal(returns.length, 10);

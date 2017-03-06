@@ -12,25 +12,40 @@ var valueOfClassical = function(classical_index) {
 };
 
 var gates = {
+  H: function(qubit_index) {
+    // apply H-gate to qubit-index
+    this.qubit = qubit_index;
+    this.code = 'H ' + qubit_index;
+  },
+  
   X: function(qubit_index) {
     // apply X-gate to qubit-index
     this.qubit = qubit_index;
     this.code = 'X ' + qubit_index;
   },
   
-  H: function(qubit_index) {
-    // apply H-gate to qubit-index
+  Y: function(qubit_index) {
+    // apply Y-gate to qubit-index
     this.qubit = qubit_index;
-    this.code = 'H ' + qubit_index;
-  }
+    this.code = 'Y ' + qubit_index;
+  },
+  
+  Z: function(qubit_index) {
+    // apply Z-gate to qubit-index
+    this.qubit = qubit_index;
+    this.code = 'Z ' + qubit_index;
+  },
 };
 
-var Program = function() { };
+var Program = function() {
+  this.src = [];
+};
 Program.prototype = {
-  src: [],
-
-  inst: function(formed_instruction) {
-    this.src.push(formed_instruction);
+  inst: function() {
+    for (var i in arguments) {
+      var formed_instruction = arguments[i];
+      this.src.push(formed_instruction);
+    }
   },
   
   measure: function(qubit_index, classical_index) {
@@ -111,6 +126,10 @@ QVM.prototype = {
       }).bind(this));
     }).bind(this);
     runMe(0);
+  },
+  
+  wavefunction: function() {
+    // debugging function on VMs
   }
 };
 
