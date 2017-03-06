@@ -18,6 +18,24 @@ var gates = {
     this.code = 'H ' + qubit_index;
   },
   
+  I: function(qubit_index) {
+    // apply I-gate to qubit-index
+    this.qubit = qubit_index;
+    this.code = 'I ' + qubit_index;
+  },
+  
+  S: function(qubit_index) {
+    // apply S-gate to qubit-index
+    this.qubit = qubit_index;
+    this.code = 'S ' + qubit_index;
+  },
+  
+  T: function(qubit_index) {
+    // apply T-gate to qubit-index
+    this.qubit = qubit_index;
+    this.code = 'T ' + qubit_index;
+  },
+  
   X: function(qubit_index) {
     // apply X-gate to qubit-index
     this.qubit = qubit_index;
@@ -35,7 +53,75 @@ var gates = {
     this.qubit = qubit_index;
     this.code = 'Z ' + qubit_index;
   },
+  
+  PHASE: function(phase, qubit_index) {
+    this.phase = phase;
+    this.qubit = qubit_index;
+    this.code = 'PHASE ' + qubit_index;
+  },
+  CPHASE00: function(alpha, qubit_index) {
+    this.phase = alpha;
+    this.qubit = qubit_index;
+    this.code = 'CPHASE00 ' + qubit_index;
+  },
+  CPHASE01: function(alpha, qubit_index) {
+    this.phase = alpha;
+    this.qubit = qubit_index;
+    this.code = 'CPHASE01 ' + qubit_index;
+  },
+  CPHASE10: function(alpha, qubit_index) {
+    this.phase = alpha;
+    this.qubit = qubit_index;
+    this.code = 'CPHASE10 ' + qubit_index;
+  },
+  CPHASE: function(alpha, qubit_index) {
+    this.phase = alpha;
+    this.qubit = qubit_index;
+    this.code = 'CPHASE ' + qubit_index;
+  },
+  RX: function(phase, qubit_index) {
+    this.phase = phase;
+    this.qubit = qubit_index;
+    this.code = 'RX ' + qubit_index;
+  },
+  RY: function(phase, qubit_index) {
+    this.phase = phase;
+    this.qubit = qubit_index;
+    this.code = 'RY ' + qubit_index;
+  },
+  RZ: function(phase, qubit_index) {
+    this.phase = phase;
+    this.qubit = qubit_index;
+    this.code = 'RZ ' + qubit_index;
+  },
+  CNOT: function(qubit_index) {
+    this.qubit = qubit_index;
+    this.code = 'CNOT ' + qubit_index;
+  },
+  CCNOT: function(qubit_index) {
+    this.qubit = qubit_index;
+    this.code = 'CCNOT ' + qubit_index;
+  },
+  SWAP: function(qubit_index) {
+    this.qubit = qubit_index;
+    this.code = 'SWAP ' + qubit_index;
+  },
+  CSWAP: function(qubit_index) {
+    this.qubit = qubit_index;
+    this.code = 'CSWAP ' + qubit_index;
+  },
+  ISWAP: function(qubit_index) {
+    this.qubit = qubit_index;
+    this.code = 'ISWAP ' + qubit_index;
+  },
+  PSWAP: function(alpha, qubit_index) {
+    this.phase = alpha;
+    this.qubit = qubit_index;
+    this.code = 'PSWAP ' + qubit_index;
+  }
 };
+
+// not supporting: defgate
 
 var Program = function() {
   this.src = [];
@@ -65,6 +151,14 @@ Program.prototype = {
     return quil;
   },
   
+  concat: function(otherProgram) {
+    this.src.concat(otherProgram.src);
+  },
+  
+  pop: function() {
+    this.src.pop();
+  },
+  
   run: function(callback) {
     for (var a = 0; a < this.src.length; a++) {
       var instruction = this.src[a];
@@ -81,6 +175,8 @@ Program.prototype = {
     callback(null);
   }
 };
+
+// not supporting: wavefunction
 
 var QVM = function() { };
 QVM.prototype = {
