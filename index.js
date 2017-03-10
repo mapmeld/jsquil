@@ -1,4 +1,4 @@
-import 'request'
+// import 'request'
 
 var qubits = [];
 var classical_bits = [];
@@ -11,113 +11,169 @@ var valueOfClassical = function(classical_index) {
   return classical_bits[classical_index] || 0;
 };
 
+var inits = {
+  TRUE: (classical_indexes) => {
+    return {
+      classical_indexes: classical_indexes,
+      code: 'TRUE [' + classical_indexes.join(',') + ']'
+    }
+  },
+  FALSE: (classical_indexes) => {
+    return {
+      classical_indexes: classical_indexes,
+      code: 'FALSE [' + classical_indexes.join(',') + ']'
+    }
+  }
+};
+
 var gates = {
-  H: function(qubit_index) {
+  H: (qubit_index) => {
     // apply H-gate to qubit-index
-    this.qubit = qubit_index;
-    this.code = 'H ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'H ' + qubit_index
+    };
   },
   
-  I: function(qubit_index) {
+  I: (qubit_index) => {
     // apply I-gate to qubit-index
-    this.qubit = qubit_index;
-    this.code = 'I ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'I ' + qubit_index
+    };
   },
   
   S: function(qubit_index) {
     // apply S-gate to qubit-index
-    this.qubit = qubit_index;
-    this.code = 'S ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'S ' + qubit_index
+    };
   },
   
   T: function(qubit_index) {
     // apply T-gate to qubit-index
-    this.qubit = qubit_index;
-    this.code = 'T ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'T ' + qubit_index
+    };
   },
   
   X: function(qubit_index) {
     // apply X-gate to qubit-index
-    this.qubit = qubit_index;
-    this.code = 'X ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'X ' + qubit_index
+    };
   },
   
   Y: function(qubit_index) {
     // apply Y-gate to qubit-index
-    this.qubit = qubit_index;
-    this.code = 'Y ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'Y ' + qubit_index
+    };
   },
   
   Z: function(qubit_index) {
     // apply Z-gate to qubit-index
-    this.qubit = qubit_index;
-    this.code = 'Z ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'Z ' + qubit_index
+    };
   },
   
   PHASE: function(phase, qubit_index) {
-    this.phase = phase;
-    this.qubit = qubit_index;
-    this.code = 'PHASE ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'PHASE ' + qubit_index
+    };
   },
   CPHASE00: function(alpha, qubit_index) {
-    this.phase = alpha;
-    this.qubit = qubit_index;
-    this.code = 'CPHASE00 ' + qubit_index;
+    let gate = {
+      phase: alpha.toFixed(16) * 1,
+      qubits: [qubit_index_a, qubit_index_b],
+    };
+    gate.code = 'CPHASE00(' + gate.phase + ') ' + gate.qubits.join(' ');
+    return gate;
   },
   CPHASE01: function(alpha, qubit_index) {
-    this.phase = alpha;
-    this.qubit = qubit_index;
-    this.code = 'CPHASE01 ' + qubit_index;
+    let gate = {
+      phase: alpha.toFixed(16) * 1,
+      qubits: [qubit_index_a, qubit_index_b],
+    };
+    gate.code = 'CPHASE01(' + gate.phase + ') ' + gate.qubits.join(' ');
+    return gate;
   },
   CPHASE10: function(alpha, qubit_index) {
-    this.phase = alpha;
-    this.qubit = qubit_index;
-    this.code = 'CPHASE10 ' + qubit_index;
+    let gate = {
+      phase: alpha.toFixed(16) * 1,
+      qubits: [qubit_index_a, qubit_index_b],
+    };
+    gate.code = 'CPHASE10(' + gate.phase + ') ' + gate.qubits.join(' ');
+    return gate;
   },
-  CPHASE: function(alpha, qubit_index) {
-    this.phase = alpha;
-    this.qubit = qubit_index;
-    this.code = 'CPHASE ' + qubit_index;
+  CPHASE: function(alpha, qubit_index_a, qubit_index_b) {
+    let gate = {
+      phase: alpha.toFixed(16) * 1,
+      qubits: [qubit_index_a, qubit_index_b],
+    };
+    gate.code = 'CPHASE(' + gate.phase + ') ' + gate.qubits.join(' ');
+    return gate;
   },
   RX: function(phase, qubit_index) {
-    this.phase = phase;
-    this.qubit = qubit_index;
-    this.code = 'RX ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'RX ' + qubit_index
+    };
   },
   RY: function(phase, qubit_index) {
-    this.phase = phase;
-    this.qubit = qubit_index;
-    this.code = 'RY ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'RY ' + qubit_index
+    };
   },
   RZ: function(phase, qubit_index) {
-    this.phase = phase;
-    this.qubit = qubit_index;
-    this.code = 'RZ ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'RZ ' + qubit_index
+    };
   },
   CNOT: function(qubit_index) {
-    this.qubit = qubit_index;
-    this.code = 'CNOT ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'CNOT ' + qubit_index
+    };
   },
   CCNOT: function(qubit_index) {
-    this.qubit = qubit_index;
-    this.code = 'CCNOT ' + qubit_index;
+    return {
+      qubit: qubit_index,
+      code: 'CCNOT ' + qubit_index
+    };
   },
-  SWAP: function(qubit_index) {
-    this.qubit = qubit_index;
-    this.code = 'SWAP ' + qubit_index;
+  SWAP: function(qubit_index_a, qubit_index_b) {
+    return {
+      qubits: [qubit_index_a, qubit_index_b],
+      code: 'SWAP ' + qubit_index_a + ' ' + qubit_index_b
+    };
   },
   CSWAP: function(qubit_index) {
-    this.qubit = qubit_index;
-    this.code = 'CSWAP ' + qubit_index;
+    return {
+      qubits: [qubit_index_a, qubit_index_b],
+      code: 'CSWAP ' + qubit_index_a + ' ' + qubit_index_b
+    };
   },
   ISWAP: function(qubit_index) {
-    this.qubit = qubit_index;
-    this.code = 'ISWAP ' + qubit_index;
+    return {
+      qubits: [qubit_index_a, qubit_index_b],
+      code: 'ISWAP ' + qubit_index_a + ' ' + qubit_index_b
+    };
   },
   PSWAP: function(alpha, qubit_index) {
-    this.phase = alpha;
-    this.qubit = qubit_index;
-    this.code = 'PSWAP ' + qubit_index;
+    return {
+      qubits: [qubit_index_a, qubit_index_b],
+      code: 'PSWAP ' + qubit_index_a + ' ' + qubit_index_b
+    };
   }
 };
 
@@ -142,11 +198,15 @@ Program.prototype = {
     var quil = '';
     for (var a = 0; a < this.src.length; a++) {
       if (typeof this.src[a] === 'object') {
-        quil += this.src[a].code;
+        if (typeof this.src[a].code === 'function') {
+          // embedded program
+          quil += this.src[a].code();
+        } else {
+          quil += this.src[a].code + '\n';
+        }
       } else {
-        quil += this.src[a];
+        quil += this.src[a] + '\n';
       }
-      quil += '\n';
     }
     return quil;
   },
@@ -173,6 +233,23 @@ Program.prototype = {
       }
     }
     callback(null);
+  },
+  
+  while_do: function(classicalRegister, loopProgram) {
+    this.src.push('LABEL @START1');
+    this.src.push('JUMP-UNLESS @END2 [' + classicalRegister + ']');
+    this.src.push(loopProgram);
+    this.src.push('JUMP @START1');
+    this.src.push('LABEL @END2');
+  },
+  
+  if_then: function(classicalRegister, thenProgram, elseProgram) {
+    this.src.push('JUMP-WHEN @THEN3 [' + classicalRegister + ']');
+    this.src.push(elseProgram);
+    this.src.push('JUMP @END4');
+    this.src.push('LABEL @THEN3')
+    this.src.push(thenProgram);
+    this.src.push('LABEL @END4');
   }
 };
 
@@ -229,4 +306,4 @@ QVM.prototype = {
   }
 };
 
-export { gates, Program, QVM };
+export { gates, inits, Program, QVM };
