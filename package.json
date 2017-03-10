@@ -14,7 +14,7 @@
     "quantum"
   ],
   "author": "Nick Doiron <ndoiron@mapmeld.com>",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/mapmeld/jsquil/issues"
   },

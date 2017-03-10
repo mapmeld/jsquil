@@ -2,6 +2,7 @@ const request = require('request');
 
 var qubits = [];
 var classical_bits = [];
+var unique_labeler = 1;
 
 var valueOfQubit = function(qubit_index) {
   return qubits[qubit_index] || 0;
@@ -255,20 +256,28 @@ Program.prototype = {
   },
   
   while_do: function(classicalRegister, loopProgram) {
-    this.src.push('LABEL @START1');
-    this.src.push('JUMP-UNLESS @END2 [' + validInt(classicalRegister) + ']');
+    var loopStart = unique_labeler;
+    var loopBypass = unique_labeler + 1;
+    unique_labeler += 2;
+    
+    this.src.push('LABEL @START' + loopStart);
+    this.src.push('JUMP-UNLESS @END' + loopBypass + ' [' + validInt(classicalRegister) + ']');
     this.src.push(loopProgram);
-    this.src.push('JUMP @START1');
-    this.src.push('LABEL @END2');
+    this.src.push('JUMP @START' + loopStart);
+    this.src.push('LABEL @END' + loopBypass);
   },
   
   if_then: function(classicalRegister, thenProgram, elseProgram) {
-    this.src.push('JUMP-WHEN @THEN3 [' + validInt(classicalRegister) + ']');
+    var ifStart = unique_labeler;
+    var ifEnd = unique_labeler + 1;
+    unique_labeler += 2;
+    
+    this.src.push('JUMP-WHEN @THEN' + ifStart + ' [' + validInt(classicalRegister) + ']');
     this.src.push(elseProgram);
-    this.src.push('JUMP @END4');
-    this.src.push('LABEL @THEN3')
+    this.src.push('JUMP @END' + ifEnd);
+    this.src.push('LABEL @THEN' + ifStart)
     this.src.push(thenProgram);
-    this.src.push('LABEL @END4');
+    this.src.push('LABEL @END' + ifEnd);
   }
 };
 
