@@ -1,5 +1,5 @@
 import { assert } from 'chai'
-import { gates, inits, Program, QVM } from '../index.js'
+import { gates, inits, operations, Program, QVM } from '../index.js'
 
 let p;
 let q = new QVM();

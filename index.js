@@ -1,203 +1,23 @@
 const request = require('request');
 
+const gates = require('./gates.js');
+const utils = require('./utils.js');
+const classicals = require('./classicals.js');
+const inits = classicals.inits;
+const operations = classicals.operations;
+
+// for working with tests, not for actual connections to QVM
 var qubits = [];
 var classical_bits = [];
-var unique_labeler = 1;
-
 var valueOfQubit = function(qubit_index) {
   return qubits[qubit_index] || 0;
 };
-
 var valueOfClassical = function(classical_index) {
   return classical_bits[classical_index] || 0;
 };
 
-var validInt = function(val) {
-  if (Math.round(val) === val) {
-    return val;
-  } else if (Math.round(1 * val) === 1 * val) {
-    return 1 * val;
-  } else {
-    throw Error('Qubit / classical register index was not an integer');
-  }
-};
-
-var inits = {
-  TRUE: (classical_indexes) => {
-    classical_indexes = classical_indexes.map(validInt);
-    return {
-      classical_indexes: classical_indexes,
-      code: 'TRUE [' + classical_indexes.join(',') + ']'
-    }
-  },
-  FALSE: (classical_indexes) => {
-    classical_indexes = classical_indexes.map(validInt);
-    return {
-      classical_indexes: classical_indexes,
-      code: 'FALSE [' + classical_indexes.join(',') + ']'
-    }
-  }
-};
-
-var gates = {
-  H: (qubit_index) => {
-    // apply H-gate to qubit-index
-    return {
-      qubit: validInt(qubit_index),
-      code: 'H ' + qubit_index
-    };
-  },
-  
-  I: (qubit_index) => {
-    // apply I-gate to qubit-index
-    return {
-      qubit: validInt(qubit_index),
-      code: 'I ' + qubit_index
-    };
-  },
-  
-  S: function(qubit_index) {
-    // apply S-gate to qubit-index
-    return {
-      qubit: validInt(qubit_index),
-      code: 'S ' + qubit_index
-    };
-  },
-  
-  T: function(qubit_index) {
-    // apply T-gate to qubit-index
-    return {
-      qubit: validInt(qubit_index),
-      code: 'T ' + qubit_index
-    };
-  },
-  
-  X: function(qubit_index) {
-    // apply X-gate to qubit-index
-    return {
-      qubit: validInt(qubit_index),
-      code: 'X ' + qubit_index
-    };
-  },
-  
-  Y: function(qubit_index) {
-    // apply Y-gate to qubit-index
-    return {
-      qubit: validInt(qubit_index),
-      code: 'Y ' + qubit_index
-    };
-  },
-  
-  Z: function(qubit_index) {
-    // apply Z-gate to qubit-index
-    return {
-      qubit: validInt(qubit_index),
-      code: 'Z ' + qubit_index
-    };
-  },
-  
-  PHASE: function(phase, qubit_index) {
-    return {
-      qubit: validInt(qubit_index),
-      code: 'PHASE ' + qubit_index
-    };
-  },
-  CPHASE00: function(alpha, qubit_index) {
-    alpha *= 1;
-    let gate = {
-      phase: alpha.toFixed(16) * 1,
-      qubits: [validInt(qubit_index_a), validInt(qubit_index_b)],
-    };
-    gate.code = 'CPHASE00(' + gate.phase + ') ' + gate.qubits.join(' ');
-    return gate;
-  },
-  CPHASE01: function(alpha, qubit_index) {
-    alpha *= 1;
-    let gate = {
-      phase: alpha.toFixed(16) * 1,
-      qubits: [validInt(qubit_index_a), validInt(qubit_index_b)],
-    };
-    gate.code = 'CPHASE01(' + gate.phase + ') ' + gate.qubits.join(' ');
-    return gate;
-  },
-  CPHASE10: function(alpha, qubit_index) {
-    alpha *= 1;
-    let gate = {
-      phase: alpha.toFixed(16) * 1,
-      qubits: [validInt(qubit_index_a), validInt(qubit_index_b)],
-    };
-    gate.code = 'CPHASE10(' + gate.phase + ') ' + gate.qubits.join(' ');
-    return gate;
-  },
-  CPHASE: function(alpha, qubit_index_a, qubit_index_b) {
-    alpha *= 1;
-    let gate = {
-      phase: alpha.toFixed(16) * 1,
-      qubits: [validInt(qubit_index_a), validInt(qubit_index_b)],
-    };
-    gate.code = 'CPHASE(' + gate.phase + ') ' + gate.qubits.join(' ');
-    return gate;
-  },
-  RX: function(phase, qubit_index) {
-    phase *= 1;
-    return {
-      phase: phase.toFixed(16) * 1,
-      code: 'RX ' + qubit_index
-    };
-  },
-  RY: function(phase, qubit_index) {
-    phase *= 1;
-    return {
-      phase: phase.toFixed(16) * 1,
-      code: 'RY ' + qubit_index
-    };
-  },
-  RZ: function(phase, qubit_index) {
-    phase *= 1;
-    return {
-      phase: phase.toFixed(16) * 1,
-      code: 'RZ ' + qubit_index
-    };
-  },
-  CNOT: function(qubit_index) {
-    return {
-      qubit: validInt(qubit_index),
-      code: 'CNOT ' + qubit_index
-    };
-  },
-  CCNOT: function(qubit_index) {
-    return {
-      qubit: validInt(qubit_index),
-      code: 'CCNOT ' + qubit_index
-    };
-  },
-  SWAP: function(qubit_index_a, qubit_index_b) {
-    return {
-      qubits: [validInt(qubit_index_a), validInt(qubit_index_b)],
-      code: 'SWAP ' + qubit_index_a + ' ' + qubit_index_b
-    };
-  },
-  CSWAP: function(qubit_index) {
-    return {
-      qubits: [validInt(qubit_index_a), validInt(qubit_index_b)],
-      code: 'CSWAP ' + qubit_index_a + ' ' + qubit_index_b
-    };
-  },
-  ISWAP: function(qubit_index) {
-    return {
-      qubits: [validInt(qubit_index_a), validInt(qubit_index_b)],
-      code: 'ISWAP ' + qubit_index_a + ' ' + qubit_index_b
-    };
-  },
-  PSWAP: function(alpha, qubit_index) {
-    return {
-      qubits: [validInt(qubit_index_a), validInt(qubit_index_b)],
-      code: 'PSWAP ' + qubit_index_a + ' ' + qubit_index_b
-    };
-  }
-};
-
 // not supporting: defgate
+var unique_labeler = 1;
 
 var Program = function() {
   this.src = [];
@@ -211,7 +31,23 @@ Program.prototype = {
   },
   
   measure: function(qubit_index, classical_index) {
-    this.src.push('MEASURE ' + validInt(qubit_index) + ' [' + validInt(classical_index) + ']');
+    this.src.push('MEASURE ' + utils.validInt(qubit_index) + ' [' + utils.validInt(classical_index) + ']');
+  },
+  
+  wait: function() {
+    this.src.push('WAIT');
+  },
+  
+  reset: function() {
+    this.src.push('RESET');
+  },
+  
+  nop: function() {
+    this.src.push('NOP');
+  },
+  
+  halt: function() {
+    this.src.push('HALT');
   },
   
   code: function() {
@@ -261,7 +97,7 @@ Program.prototype = {
     unique_labeler += 2;
     
     this.src.push('LABEL @START' + loopStart);
-    this.src.push('JUMP-UNLESS @END' + loopBypass + ' [' + validInt(classicalRegister) + ']');
+    this.src.push('JUMP-UNLESS @END' + loopBypass + ' [' + utils.validInt(classicalRegister) + ']');
     this.src.push(loopProgram);
     this.src.push('JUMP @START' + loopStart);
     this.src.push('LABEL @END' + loopBypass);
@@ -272,7 +108,7 @@ Program.prototype = {
     var ifEnd = unique_labeler + 1;
     unique_labeler += 2;
     
-    this.src.push('JUMP-WHEN @THEN' + ifStart + ' [' + validInt(classicalRegister) + ']');
+    this.src.push('JUMP-WHEN @THEN' + ifStart + ' [' + utils.validInt(classicalRegister) + ']');
     this.src.push(elseProgram);
     this.src.push('JUMP @END' + ifEnd);
     this.src.push('LABEL @THEN' + ifStart)
@@ -314,7 +150,7 @@ QVM.prototype = {
   
   run: function(program, classical_indexes, iterations, callback) {
     this.program = program;
-    this.classical_indexes = classical_indexes.map(validInt);
+    this.classical_indexes = classical_indexes.map(utils.validInt);
 
     let responses = [];
     if (!iterations || isNaN(iterations * 1)) {
@@ -343,7 +179,6 @@ QVM.prototype = {
     
     var runMe = (function(i) {
       if (i >= iterations) {
-        console.log('too big');
         return callback(null, responses);
       }
       this.runOnce((function(err, response) {
@@ -355,10 +190,6 @@ QVM.prototype = {
       }).bind(this));
     }).bind(this);
     runMe(0);
-  },
-  
-  wavefunction: function() {
-    // debugging function on VMs
   }
 };
 
@@ -369,12 +200,11 @@ var Connection = function(key, endpoint) {
     throw Error('No API Key was provided');
   }
 };
-Connection.prototype = {
-
-};
+Connection.prototype = {};
 
 module.exports = {
   gates: gates,
+  operations: operations,
   inits: inits,
   Program: Program,
   QVM: QVM,
