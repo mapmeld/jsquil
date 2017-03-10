@@ -19,12 +19,15 @@ let c = new Connection('API_KEY');
 let q = new QVM(c);
 
 let p = new Program();
+// put an X gate on the zeroth qubit
 p.inst(gates.X(0));
+// store the zeroth qubit's value in the zeroth classical bit
 p.measure(0, 0);
 // p.code() =
 //   X 0
 //   MEASURE 0 [0]
 
+// run the program once, and return the zeroth classical bit on each iteration
 q.run(p, [0], 1, (err, returns) => {
   // err = null
   // returns = [[1]]
@@ -73,7 +76,7 @@ p.inst( inits.TRUE([0, 1, 2]) );
 
 Looping some instructions while a classical register value is TRUE
 
-```
+```javascript
 let classical_register = 2;
 let loop_program = new Program();
 loop_program.inst(gates.X(0), gates.H(0));
@@ -83,7 +86,7 @@ p.while_do(classical_register, loop_program);
 
 An if-then statement
 
-```
+```javascript
 let then_branch = new Program();
 ...
 let else_branch = new Program();
