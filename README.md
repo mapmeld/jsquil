@@ -81,7 +81,7 @@ p.inst(
 Initializing a classical register value
 
 ```javascript
-p.inst( inits.TRUE([0, 1, 2]) );
+p.inst( inits.TRUE(0) );
 ```
 
 Operations on classical registers
