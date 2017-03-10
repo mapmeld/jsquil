@@ -1,7 +1,7 @@
 {
-  "name": "quantum-js-interface",
-  "version": "1.0.0",
-  "description": "Replace PyQuil library with NodeJS",
+  "name": "jsquil",
+  "version": "0.2.1",
+  "description": "Replace pyQuil library with NodeJS",
   "main": "index.js",
   "scripts": {
     "test": "mocha --compilers js:babel-core/register"

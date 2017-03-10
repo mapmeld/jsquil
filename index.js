@@ -1,4 +1,4 @@
-// import 'request'
+const request = require('request');
 
 var qubits = [];
 var classical_bits = [];
@@ -255,7 +255,15 @@ Program.prototype = {
 
 // not supporting: wavefunction
 
-var QVM = function() { };
+var QVM = function(connection) {
+  if (connection) {
+    // store and validate endpoint
+    this.connection = connection;
+    if (!this.connection.ENDPOINT || !this.connection.API_KEY) {
+      throw Error('Connection object did not contain an Endpoint and an API Key');
+    }
+  }
+};
 QVM.prototype = {
   runOnce: function(callback) {
     let cix = this.classical_indexes;
@@ -285,6 +293,26 @@ QVM.prototype = {
       iterations = 1;
     }
     
+    if (this.connection) {
+      request.post({
+        url: this.connection.ENDPOINT,
+        headers: {
+          'x-api-key': this.connection.API_KEY,
+          'x-api-client': 'jsquil',
+          'Accept': 'application/octet-stream'
+        },
+        json: {
+          type: 'multishot',
+          addresses: classical_indexes,
+          trials: iterations,
+          'quil-instructions': this.program.code() 
+        }
+      }, (err, response, body) => {
+        callback(err, body);
+      });
+      return;
+    }
+    
     var runMe = (function(i) {
       if (i >= iterations) {
         console.log('too big');
@@ -306,4 +334,21 @@ QVM.prototype = {
   }
 };
 
-export { gates, inits, Program, QVM };
+var Connection = function(key, endpoint) {
+  this.ENDPOINT = endpoint || 'https://api.rigetti.com/qvm';
+  this.API_KEY = key;
+  if (!this.API_KEY) {
+    throw Error('No API Key was provided');
+  }
+};
+Connection.prototype = {
+
+};
+
+module.exports = {
+  gates: gates,
+  inits: inits,
+  Program: Program,
+  QVM: QVM,
+  Connection: Connection
+};

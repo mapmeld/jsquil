@@ -1,6 +1,6 @@
 # jsquil
 
-JavaScript interface for writing Quil programs, based on Rigetti Computing's 
+JavaScript interface for writing Quil programs, from Rigetti Computing's 
 <a href='https://github.com/rigetticomputing/pyquil'>pyQuil package</a>.
 
 ## Sample code
@@ -11,11 +11,14 @@ in JavaScript.
 Here's how you would run an X-gate on a qubit, and store it in a classical register.
 
 ```javascript
-import { gates, inits, Program, QVM } from 'jsquil'
+import { gates, inits, Program, QVM, Connection } from 'jsquil'
 
-let q = new QVM();
+// get an API key from http://forest.rigetti.com/
+// if c=null you will get the internal test returns
+let c = new Connection('API_KEY');
+let q = new QVM(c);
+
 let p = new Program();
-
 p.inst(gates.X(0));
 p.measure(0, 0);
 // p.code() =
