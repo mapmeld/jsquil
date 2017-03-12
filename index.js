@@ -119,12 +119,28 @@ Program.prototype = {
 
 // not supporting: wavefunction
 
-var QVM = function(connection) {
+var QVM = function(connection, gate_noise, measure_noise) {
   if (connection) {
     // store and validate endpoint
     this.connection = connection;
     if (!this.connection.ENDPOINT || !this.connection.API_KEY) {
       throw Error('Connection object did not contain an Endpoint and an API Key');
+    }
+  }
+  
+  // store and validate noise
+  if (gate_noise) {
+    if (gate_noise.length === 3) {
+      this.gate_noise = gate_noise.map(utils.validInt);
+    } else {
+      throw Error ('Gate noise was not specified correctly [Px, Py, Pz]');
+    }
+  }
+  if (measure_noise) {
+    if (measure_noise.length === 3) {
+      this.measure_noise = measure_noise.map(utils.validInt);
+    } else {
+      throw Error ('Measure noise was not specified correctly [Px, Py, Pz]');
     }
   }
 };
@@ -158,6 +174,18 @@ QVM.prototype = {
     }
     
     if (this.connection) {
+      let payload = {
+        type: 'multishot',
+        addresses: this.classical_indexes,
+        trials: iterations,
+        'quil-instructions': this.program.code() 
+      };
+      if (this.gate_noise) {
+        payload['gate-noise'] = this.gate_noise;
+      }
+      if (this.measure_noise) {
+        payload['measurement-noise'] = this.measure_noise;
+      }
       request.post({
         url: this.connection.ENDPOINT,
         headers: {
@@ -165,12 +193,7 @@ QVM.prototype = {
           'x-api-client': 'jsquil',
           'Accept': 'application/octet-stream'
         },
-        json: {
-          type: 'multishot',
-          addresses: this.classical_indexes,
-          trials: iterations,
-          'quil-instructions': this.program.code() 
-        }
+        json: payload
       }, (err, response, body) => {
         callback(err, body);
       });

@@ -78,7 +78,7 @@ describe('H gate', () => {
 });
 
 
-// defining gates?  not supported
+// defining new gates?  not supported
 
 // wavefunction() ?  not supported
 
@@ -89,10 +89,37 @@ describe('phase gates', () => {
   });
 });
 
+describe('QVM noise', () => {
+  it('adds gate noise', () => {
+    let q = new QVM(null, [1, 1, 1]);
+    assert.equal(q.gate_noise.join(','), '1,1,1');
+  });
+  
+  it('adds measurement noise', () => {
+    let q = new QVM(null, null, [1, 1, 1]);
+    assert.equal(q.measure_noise.join(','), '1,1,1');
+  });
+  
+  it('validates noise', () => {
+    let fn = () => {
+      new QVM(null, [1, 1]);
+    };
+    let fn2 = () => {
+      new QVM(null, [1, 1, 'a']);
+    };
+    let fn3 = () => {
+      new QVM(null, [1, 1, 1], 'alphabet');
+    };
+    assert.throws(fn, Error, 'Gate noise was not specified correctly [Px, Py, Pz]');
+    assert.throws(fn2, Error, 'Qubit / classical register index was not an integer');
+    assert.throws(fn3, Error, 'Measure noise was not specified correctly [Px, Py, Pz]');
+  });
+});
+
 describe('control flow', () => {
   it('embeds a program in a do-while loop', () => {
     p = new Program();
-    p.inst(inits.TRUE([2]));
+    p.inst(inits.TRUE(2));
     let loop = new Program();
     loop.inst(gates.X(0));
     p.while_do(2, loop);
@@ -102,7 +129,7 @@ describe('control flow', () => {
   
   it('embeds two programs in an if-then loop', () => {
     p = new Program();
-    p.inst(inits.TRUE([2]));
+    p.inst(inits.TRUE(2));
     let thener = new Program();
     thener.inst(gates.X(0));
     let elser = new Program();

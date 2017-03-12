@@ -119,6 +119,14 @@ let else_branch = new Program();
 p.if_then(test_register, then_branch, else_branch);
 ```
 
+Adding gate and measurement noise to the QVM
+
+```javascript
+let gate_noise = [x, y, z];
+let measure_noise = [0.2, 0, 0];
+let q = new QVM(connection, gate_noise, measure_noise);
+```
+
 ## Tests
 
 ```bash

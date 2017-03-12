@@ -1,6 +1,6 @@
 {
   "name": "jsquil",
-  "version": "0.3.2",
+  "version": "0.4.1",
   "description": "Replace pyQuil library with NodeJS",
   "main": "index.js",
   "scripts": {
