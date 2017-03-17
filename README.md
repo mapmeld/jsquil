@@ -3,15 +3,14 @@
 JavaScript interface for writing Quil programs, based on Rigetti Computing's 
 <a href='https://github.com/rigetticomputing/pyquil'>pyQuil package</a>.
 
-Make a list of instructions to run on qubits and classical registers, and then use the
+Make a list of instructions to run on a hybrid computer with both qubits and classical registers, and then use the
 measure instruction to store a qubit value onto a classical register.
 
 You can then return the value of these classical registers on each run of your program.
 
 ## Sample code
 
-I am going through the example code in pyQuil and trying to make equivalent tests and sample programs
-in JavaScript.
+Tests based on the example code in pyQuil
 
 ```javascript
 import { gates, inits, operations, Program, QVM, Connection } from 'jsquil'
@@ -39,19 +38,19 @@ q.run(p, [1], 2, (err, returns) => {
 });
 ```
 
-Changing the run command to return three classical register values:
+Changing the run command to return three classical registers' values:
 
 ```javascript
 q.run(p, [0, 1, 2], 1, (err, returns) => { });
 ```
 
-Running a program ten times:
+Changing the run command to execute a program ten times:
 
 ```javascript
 q.run(p, [0], 10, (err, returns) => { });
 ```
 
-Two ways to write multiple gate commands:
+Two ways to write a series of gate commands:
 
 ```javascript
 p.inst(gates.X(0), gates.Y(1), gates.Z(0));
@@ -64,7 +63,7 @@ p.code();
 > "X 0\nY 1\nZ 0\n"
 ```
 
-Quantum Fourier Transform:
+<a href='https://en.wikipedia.org/wiki/Quantum_Fourier_transform'>Quantum Fourier Transform</a>:
 
 ```javascript
 p.inst(
@@ -109,7 +108,7 @@ loop_program.measure(0, classical_register);
 p.while_do(classical_register, loop_program);
 ```
 
-An if-then statement based on a classical register bit value
+An if-then-else statement combines multiple program objects and chooses one based on a classical register bit value
 
 ```javascript
 let then_branch = new Program();
@@ -119,7 +118,7 @@ let else_branch = new Program();
 p.if_then(test_register, then_branch, else_branch);
 ```
 
-Adding gate and measurement noise to the QVM
+Adding gate and measurement noise to the QVM, to simulate a quantum computer
 
 ```javascript
 let gate_noise = [x, y, z];
