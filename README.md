@@ -1,5 +1,7 @@
 # jsquil
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/mapmeld/jsquil.svg)](https://greenkeeper.io/)
+
 JavaScript interface for writing Quil programs, based on Rigetti Computing's 
 <a href='https://github.com/rigetticomputing/pyquil'>pyQuil package</a>.
 
