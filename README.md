@@ -2,7 +2,7 @@
 
 [![Greenkeeper badge](https://badges.greenkeeper.io/mapmeld/jsquil.svg)](https://greenkeeper.io/)
 
-JavaScript interface for writing Quil programs, based on Rigetti Computing's 
+JavaScript interface for writing Quil programs, based on Rigetti Computing's
 <a href='https://github.com/rigetticomputing/pyquil'>pyQuil package</a>.
 
 Make a list of instructions to run on a hybrid computer with both qubits and classical registers, and then use the
@@ -17,8 +17,11 @@ Tests based on the example code in pyQuil
 ```javascript
 import { gates, inits, operations, Program, QVM, Connection } from 'jsquil'
 
-// get an API key from http://forest.rigetti.com/
-let c = new Connection('API_KEY');
+// request API credentials from http://rigetti.com/forest
+let c = new Connection({
+  user_id: 'USER_ID',
+  api_key: 'API_KEY'
+});
 let q = new QVM(c);
 
 let p = new Program();

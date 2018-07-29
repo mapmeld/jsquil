@@ -29,27 +29,27 @@ Program.prototype = {
       this.src.push(formed_instruction);
     }
   },
-  
+
   measure: function(qubit_index, classical_index) {
     this.src.push('MEASURE ' + utils.validInt(qubit_index) + ' [' + utils.validInt(classical_index) + ']');
   },
-  
+
   wait: function() {
     this.src.push('WAIT');
   },
-  
+
   reset: function() {
     this.src.push('RESET');
   },
-  
+
   nop: function() {
     this.src.push('NOP');
   },
-  
+
   halt: function() {
     this.src.push('HALT');
   },
-  
+
   code: function() {
     var quil = '';
     for (var a = 0; a < this.src.length; a++) {
@@ -66,15 +66,15 @@ Program.prototype = {
     }
     return quil;
   },
-  
+
   concat: function(otherProgram) {
     this.src.concat(otherProgram.src);
   },
-  
+
   pop: function() {
     this.src.pop();
   },
-  
+
   run: function(callback) {
     for (var a = 0; a < this.src.length; a++) {
       var instruction = this.src[a];
@@ -90,24 +90,24 @@ Program.prototype = {
     }
     callback(null);
   },
-  
+
   while_do: function(classicalRegister, loopProgram) {
     var loopStart = unique_labeler;
     var loopBypass = unique_labeler + 1;
     unique_labeler += 2;
-    
+
     this.src.push('LABEL @START' + loopStart);
     this.src.push('JUMP-UNLESS @END' + loopBypass + ' [' + utils.validInt(classicalRegister) + ']');
     this.src.push(loopProgram);
     this.src.push('JUMP @START' + loopStart);
     this.src.push('LABEL @END' + loopBypass);
   },
-  
+
   if_then: function(classicalRegister, thenProgram, elseProgram) {
     var ifStart = unique_labeler;
     var ifEnd = unique_labeler + 1;
     unique_labeler += 2;
-    
+
     this.src.push('JUMP-WHEN @THEN' + ifStart + ' [' + utils.validInt(classicalRegister) + ']');
     this.src.push(elseProgram);
     this.src.push('JUMP @END' + ifEnd);
@@ -123,11 +123,11 @@ var QVM = function(connection, gate_noise, measure_noise) {
   if (connection) {
     // store and validate endpoint
     this.connection = connection;
-    if (!this.connection.ENDPOINT || !this.connection.API_KEY) {
-      throw Error('Connection object did not contain an Endpoint and an API Key');
+    if (!this.connection.ENDPOINT || !this.connection.USER_ID || !this.connection.API_KEY) {
+      throw Error('Connection object did not contain an Endpoint, a User ID, and an API Key');
     }
   }
-  
+
   // store and validate noise
   if (gate_noise) {
     if (gate_noise.length === 3) {
@@ -151,7 +151,7 @@ QVM.prototype = {
       if (err) {
         return callback(err);
       }
-      
+
       var returns = [];
       function readIndex(i) {
         if (i >= cix.length) {
@@ -163,7 +163,7 @@ QVM.prototype = {
       readIndex(0);
     });
   },
-  
+
   run: function(program, classical_indexes, iterations, callback) {
     this.program = program;
     this.classical_indexes = classical_indexes.map(utils.validInt);
@@ -172,13 +172,13 @@ QVM.prototype = {
     if (!iterations || isNaN(iterations * 1)) {
       iterations = 1;
     }
-    
+
     if (this.connection) {
       let payload = {
         type: 'multishot',
         addresses: this.classical_indexes,
         trials: iterations,
-        'quil-instructions': this.program.code() 
+        'quil-instructions': this.program.code()
       };
       if (this.gate_noise) {
         payload['gate-noise'] = this.gate_noise;
@@ -189,17 +189,18 @@ QVM.prototype = {
       request.post({
         url: this.connection.ENDPOINT,
         headers: {
-          'x-api-key': this.connection.API_KEY,
-          'x-api-client': 'jsquil',
+          'X-Api-Key': this.connection.API_KEY,
+          'X-User-Id': this.connection.USER_ID,
+          'Content-Type': 'application/json; charset=utf-8',
           'Accept': 'application/octet-stream'
         },
         json: payload
       }, (err, response, body) => {
-        callback(err, body);
+        callback(body);
       });
       return;
     }
-    
+
     var runMe = (function(i) {
       if (i >= iterations) {
         return callback(null, responses);
@@ -218,9 +219,18 @@ QVM.prototype = {
 
 var Connection = function(key, endpoint) {
   this.ENDPOINT = endpoint || 'https://api.rigetti.com/qvm';
-  this.API_KEY = key;
+
+  if (typeof key !== 'object') {
+    throw Error('The API now requires both a User ID and an API Key');
+  }
+
+  this.API_KEY = key.api_key;
+  this.USER_ID = key.user_id;
   if (!this.API_KEY) {
     throw Error('No API Key was provided');
+  }
+  if (!this.USER_ID) {
+    throw Error('No User ID was provided');
   }
 };
 Connection.prototype = {};

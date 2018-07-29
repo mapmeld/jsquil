@@ -2,3 +2,4 @@
 node_modules
 *.log
 TestRun.js
+package-lock.json
