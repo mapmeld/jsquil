@@ -131,6 +131,17 @@ let measure_noise = [0.2, 0, 0];
 let q = new QVM(connection, gate_noise, measure_noise);
 ```
 
+### Endpoints
+
+If the endpoint changes:
+
+```javascript
+let c = new Connection({
+  user_id: 'USER_ID',
+  api_key: 'API_KEY'
+}, 'https://endpoint.example.com');
+```
+
 ## Tests
 
 ```bash
