@@ -10,6 +10,10 @@ measure instruction to store a qubit value onto a classical register.
 
 You can then return the value of these classical registers on each run of your program.
 
+# Want more JS and Quantum Computers?
+## Upgrade to <a href="https://github.com/mapmeld/quantum-quail">Quantum Quail</a>
+Goals: multi-platform, async quantum computing library written in TypeScript
+
 ## Sample code
 
 Tests based on the example code in pyQuil
