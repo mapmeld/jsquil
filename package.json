@@ -4,7 +4,7 @@
   "description": "Replace pyQuil library with NodeJS",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register"
+    "test": "mocha --require @babel/register"
   },
   "repository": {
     "type": "git",
@@ -20,10 +20,16 @@
   },
   "homepage": "https://github.com/mapmeld/jsquil#readme",
   "devDependencies": {
-    "babel-core": "^6.23.1",
-    "babel-preset-es2015": "^6.22.0",
-    "chai": "^4.1.2",
-    "mocha": "^5.0.0"
+    "@babel/core": "^7.3.3",
+    "@babel/preset-env": "^7.3.1",
+    "@babel/register": "^7.0.0",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-eslint": "^10.0.1",
+    "babel-loader": "^8.0.5",
+    "babel-preset-es2015": "^6.24.1",
+    "chai": "^4.2.0",
+    "mocha": "^6.0.0"
   },
   "dependencies": {
     "request": "^2.85.0"
