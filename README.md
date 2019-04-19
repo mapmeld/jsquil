@@ -11,8 +11,8 @@ measure instruction to store a qubit value onto a classical register.
 You can then return the value of these classical registers on each run of your program.
 
 # Want more JS and Quantum Computers?
-## Upgrade to <a href="https://github.com/mapmeld/quantum-quail">Quantum Quail</a>
-Goals: multi-platform, async quantum computing library written in TypeScript
+## Upgrade to <a href="https://github.com/mapmeld/quantum-peep">Quantum Peep</a>
+Multi-platform, async quantum computing library written in TypeScript
 
 ## Sample code
 
@@ -26,7 +26,14 @@ let c = new Connection({
   user_id: 'USER_ID',
   api_key: 'API_KEY'
 });
-let q = new QVM(c);
+
+// connection for QVM Docker container (which I host)
+let c2 = new Connection({
+  user_id: 'USER_ID',
+  api_key: 'API_KEY'
+}, 'http://165.227.62.245:5000');
+
+let q = new QVM(c2);
 
 let p = new Program();
 // put an X gate on the zeroth qubit
@@ -37,26 +44,21 @@ p.measure(0, 1);
 
 // p now contains Quil instructions, which look like this:
 // p.code()
+// >  DECLARE ro BIT[2]
 // >  X 0
-// >  MEASURE 0 [1]
+// >  MEASURE 0 ro[1]
 
-// run the program twice, and return the first classical register on each iteration
-q.run(p, [1], 2, (err, returns) => {
+// run the program twice, returning classical registers from each iteration
+q.run(p, 2, (err, returns) => {
   // err = null
   // returns = [[1], [1]]
 });
 ```
 
-Changing the run command to return three classical registers' values:
-
-```javascript
-q.run(p, [0, 1, 2], 1, (err, returns) => { });
-```
-
 Changing the run command to execute a program ten times:
 
 ```javascript
-q.run(p, [0], 10, (err, returns) => { });
+q.run(p, 10, (err, returns) => { });
 ```
 
 Two ways to write a series of gate commands:

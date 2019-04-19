@@ -23,6 +23,8 @@ var Program = function() {
   this.src = [];
 };
 Program.prototype = {
+  maxClassicalBit: 0,
+
   inst: function() {
     for (var i in arguments) {
       var formed_instruction = arguments[i];
@@ -31,7 +33,8 @@ Program.prototype = {
   },
 
   measure: function(qubit_index, classical_index) {
-    this.src.push('MEASURE ' + utils.validInt(qubit_index) + ' [' + utils.validInt(classical_index) + ']');
+    this.maxClassicalBit = Math.max(this.maxClassicalBit, utils.validInt(classical_index));
+    this.src.push('MEASURE ' + utils.validInt(qubit_index) + ' ro[' + utils.validInt(classical_index) + ']');
   },
 
   wait: function() {
@@ -50,21 +53,26 @@ Program.prototype = {
     this.src.push('HALT');
   },
 
-  code: function() {
+  code: function(isEmbedded) {
     var quil = '';
     for (var a = 0; a < this.src.length; a++) {
-      if (typeof this.src[a] === 'object') {
-        if (typeof this.src[a].code === 'function') {
+      var codeComponent = this.src[a];
+      if (typeof codeComponent === 'object') {
+        if (typeof codeComponent.code === 'function') {
           // embedded program
-          quil += this.src[a].code();
+          quil += codeComponent.code(true);
         } else {
-          quil += this.src[a].code + '\n';
+          quil += codeComponent.code + '\n';
+        }
+        if (codeComponent.maxClassicalBit) {
+          this.maxClassicalBit = Math.max(this.maxClassicalBit, codeComponent.maxClassicalBit);
         }
       } else {
         quil += this.src[a] + '\n';
       }
     }
-    return quil;
+    var prefix = isEmbedded ? '' : 'DECLARE ro BIT[' + (this.maxClassicalBit + 1) + ']\n';
+    return prefix + quil;
   },
 
   concat: function(otherProgram) {
@@ -92,23 +100,29 @@ Program.prototype = {
   },
 
   while_do: function(classicalRegister, loopProgram) {
+    classicalRegister = utils.validInt(classicalRegister);
+    this.maxClassicalRegister = Math.max(this.maxClassicalRegister, classicalRegister);
+
     var loopStart = unique_labeler;
     var loopBypass = unique_labeler + 1;
     unique_labeler += 2;
 
     this.src.push('LABEL @START' + loopStart);
-    this.src.push('JUMP-UNLESS @END' + loopBypass + ' [' + utils.validInt(classicalRegister) + ']');
+    this.src.push('JUMP-UNLESS @END' + loopBypass + ' ro[' + classicalRegister + ']');
     this.src.push(loopProgram);
     this.src.push('JUMP @START' + loopStart);
     this.src.push('LABEL @END' + loopBypass);
   },
 
   if_then: function(classicalRegister, thenProgram, elseProgram) {
+    classicalRegister = utils.validInt(classicalRegister);
+    this.maxClassicalRegister = Math.max(this.maxClassicalRegister, classicalRegister);
+
     var ifStart = unique_labeler;
     var ifEnd = unique_labeler + 1;
     unique_labeler += 2;
 
-    this.src.push('JUMP-WHEN @THEN' + ifStart + ' [' + utils.validInt(classicalRegister) + ']');
+    this.src.push('JUMP-WHEN @THEN' + ifStart + ' ro[' + classicalRegister + ']');
     this.src.push(elseProgram);
     this.src.push('JUMP @END' + ifEnd);
     this.src.push('LABEL @THEN' + ifStart)
@@ -146,27 +160,19 @@ var QVM = function(connection, gate_noise, measure_noise) {
 };
 QVM.prototype = {
   runOnce: function(callback) {
-    let cix = this.classical_indexes;
+    let maxClassicalIndex = this.program.maxClassicalIndex;
     this.program.run(function(err) {
       if (err) {
         return callback(err);
       }
 
-      var returns = [];
-      function readIndex(i) {
-        if (i >= cix.length) {
-          return callback(null, returns);
-        }
-        returns.push(valueOfClassical(cix[i]));
-        readIndex(i + 1);
-      }
-      readIndex(0);
+      var returns = new Array(maxClassicalIndex);
+      callback(null, returns);
     });
   },
 
-  run: function(program, classical_indexes, iterations, callback) {
+  run: function(program, iterations, callback) {
     this.program = program;
-    this.classical_indexes = classical_indexes.map(utils.validInt);
 
     let responses = [];
     if (!iterations || isNaN(iterations * 1)) {
@@ -175,22 +181,24 @@ QVM.prototype = {
 
     if (this.connection) {
       let payload = {
-        type: 'multishot',
-        addresses: this.classical_indexes,
+        type: 'multishot-measure',
+        qubits: [0, 1, 2, 3],
         trials: iterations,
         'quil-instructions': this.program.code()
       };
-      if (this.gate_noise) {
-        payload['gate-noise'] = this.gate_noise;
-      }
-      if (this.measure_noise) {
-        payload['measurement-noise'] = this.measure_noise;
-      }
+      // if (this.gate_noise) {
+      //   payload['gate-noise'] = this.gate_noise;
+      // }
+      // if (this.measure_noise) {
+      //   payload['measurement-noise'] = this.measure_noise;
+      // }
+      console.log(this.connection.ENDPOINT);
+
       request.post({
         url: this.connection.ENDPOINT,
         headers: {
-          'X-Api-Key': this.connection.API_KEY,
-          'X-User-Id': this.connection.USER_ID,
+          //'X-Api-Key': this.connection.API_KEY,
+          //'X-User-Id': this.connection.USER_ID,
           'Content-Type': 'application/json; charset=utf-8',
           'Accept': 'application/octet-stream'
         },
@@ -218,7 +226,7 @@ QVM.prototype = {
 };
 
 var Connection = function(key, endpoint) {
-  this.ENDPOINT = endpoint || 'https://api.rigetti.com/qvm';
+  this.ENDPOINT = endpoint || 'https://forest-server.qcs.rigetti.com';
 
   if (typeof key !== 'object') {
     throw Error('The API now requires both a User ID and an API Key');

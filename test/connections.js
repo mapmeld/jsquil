@@ -12,7 +12,7 @@ describe('validate connections', () => {
   it('has a default endpoint', () => {
     let c = new Connection({ api_key: 'API KEY', user_id: 'USER ID' });
     assert.equal(c.API_KEY, 'API KEY');
-    assert.equal(c.ENDPOINT, 'https://api.rigetti.com/qvm');
+    assert.equal(c.ENDPOINT, 'https://forest-server.qcs.rigetti.com');
   });
 
   it('adds a new endpoint', () => {
