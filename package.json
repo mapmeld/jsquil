@@ -21,7 +21,7 @@
   "homepage": "https://github.com/mapmeld/jsquil#readme",
   "devDependencies": {
     "@babel/core": "^7.9.0",
-    "@babel/preset-env": "^7.3.1",
+    "@babel/preset-env": "^7.9.5",
     "@babel/register": "^7.0.0",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
